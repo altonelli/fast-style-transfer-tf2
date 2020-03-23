@@ -3,6 +3,6 @@ google-cloud-storage
 google-api-python-client
 apiclient
 tensorflow-addons==0.8.2
-typeguard
+typeguard==2.7.1
 # tensorflow-gpu==2.1.0
-grpcio
+# grpcio==2.1.0
