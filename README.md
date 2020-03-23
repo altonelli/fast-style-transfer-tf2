@@ -12,31 +12,31 @@ images are preprocesse/cropped from the original artwork to abstract certain det
 Results after 2 epochs. All of these samples were trained with the default hyperparameters and can be tuned accordingly.
 
 <div align='center'>
-<img src = './assets/style/mosaic.jpg' height = '150px'>
+<img src = './assets/styles/mosaic.jpg' height = '150px'>
 <img src = './assets/samples/chicago_mosaic.jpg' height = '150px'>
 <img src = './assets/samples/oceanfront_mosaic.jpg' height = '150px'>
 </div>
 <br>
 <div align='center'>
-<img src = './assets/style/rain_princess.jpg' height = '150px'>
+<img src = './assets/styles/rain_princess.jpg' height = '150px'>
 <img src = './assets/samples/chicago_rain_princess.jpg' height = '150px'>
 <img src = './assets/samples/oceanfront_rain_princess.jpg' height = '150px'>
 </div>
 <br>
 <div align='center'>
-<img src = './assets/style/the_scream.jpg' height = '150px'>
+<img src = './assets/styles/the_scream.jpg' height = '150px'>
 <img src = './assets/samples/chicago_scream.jpg' height = '150px'>
 <img src = './assets/samples/oceanfront_scream.jpg' height = '150px'>
 </div>
 <br>
 <div align='center'>
-<img src = './assets/style/udnie.jpg' height = '150px'>
+<img src = './assets/styles/udnie.jpg' height = '150px'>
 <img src = './assets/samples/chicago_udnie.jpg' height = '150px'>
 <img src = './assets/samples/oceanfront_udnie.jpg' height = '150px'>
 </div>
 <br>
 <div align='center'>
-<img src = './assets/style/wave_crop.jpg' height = '150px'>
+<img src = './assets/styles/wave_crop.jpg' height = '150px'>
 <img src = './assets/samples/chicago_wave.jpg' height = '150px'>
 <img src = './assets/samples/oceanfront_wave.jpg' height = '150px'>
 </div>
