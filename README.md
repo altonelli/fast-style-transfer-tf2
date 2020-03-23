@@ -12,13 +12,13 @@ images are preprocesse/cropped from the original artwork to abstract certain det
 Results after 2 epochs. All of these samples were trained with the default hyperparameters and can be tuned accordingly.
 
 <div align='center'>
-<div align='center' width="33%">
+<div width="33%">
 <img src = './assets/styles/mosaic.jpg' height = '200px'>
 </div>
-<div align='center' width="33%">
+<div width="33%">
 <img src = './assets/samples/chicago_mosaic.jpg' height = '200px'>
 </div>
-<div align='center' width="33%">
+<div width="33%">
 <img src = './assets/samples/oceanfront_mosaic.jpg' height = '200px'>
 </div>
 </div>
