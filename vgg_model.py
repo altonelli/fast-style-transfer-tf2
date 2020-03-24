@@ -1,14 +1,13 @@
 import tensorflow as tf
 from tensorflow.keras.applications import VGG19
 from tensorflow.keras import Model
-import numpy as np
 from collections import namedtuple
 
-ModelOutputs = namedtuple('ModelOutputs', 'style_output content_output')
+VGG_Output = namedtuple('VGG_Output', 'content_output style_output')
+
 
 class VGGModel:
     def __init__(self,
-                 partition_idx,
                  content_layers=["conv4_2"],
                  style_layers=["conv1_1", "conv2_1", "conv3_1", "conv4_1", "conv5_1"]
                  ):
@@ -44,24 +43,17 @@ class VGGModel:
         self.content_layers = content_layers
         self.style_layers = style_layers
         self.total_output_layers = self.content_layers + self.style_layers
-        self.partition_idx = partition_idx
-        self.model = Model(self.vgg.inputs, self._get_outputs())
-        self.mean_pixel = tf.convert_to_tensor(np.array([123.68, 116.779, 103.939]), dtype=tf.float32)
+        self.partition_idx = len(self.content_layers)
+        self.model = Model(self.vgg.inputs, self._get_outputs(), trainable=False)
+
+    def forward(self, X):
+        outputs = self.model(X)
+        return VGG_Output(outputs[:self.partition_idx], outputs[self.partition_idx:])
 
     def _get_outputs(self):
         return [self.vgg.layers[self.layers[layer]].output for layer in self.total_output_layers]
 
     def preprocess(self, images):
         images = tf.keras.applications.vgg19.preprocess_input(images)
-        # images = images - self.mean_pixel
-        images = tf.image.resize(images, (224, 224))
         images = tf.cast(images, tf.float32)
         return images
-
-    def get_content_outputs(self):
-        o = self._get_outputs()
-        return [o[i] for i in range(self.partition_idx)]
-
-    def get_style_outputs(self):
-        o = self._get_outputs()
-        return [o[i] for i in range(self.partition_idx, len(o))]

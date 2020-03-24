@@ -1,26 +1,25 @@
-from layers import ConvLayer, ConvTLayer, ResBlock
 import tensorflow as tf
-from tensorflow.keras.layers import Activation
+from tensorflow.keras.layers import BatchNormalization, Conv2D, Add, Layer, Conv2DTranspose, Activation
+from layers import ConvLayer, ResBlock, ConvTLayer
 
-class TransformNet(object):
+
+class TransformNet:
   def __init__(self):
-    super(TransformNet, self).__init__()
-    self.conv1 = ConvLayer(32, (9,9), strides=(1,1), name="conv_1")
-    self.conv2 = ConvLayer(64, (3,3), strides=(2,2), name="conv_2")
-    self.conv3 = ConvLayer(128, (3,3), strides=(2,2), name="conv_3")
-    self.res1 = ResBlock(128, (3,3), prefix="res_1")
-    self.res2 = ResBlock(128, (3,3), prefix="res_2")
-    self.res3 = ResBlock(128, (3,3), prefix="res_3")
-    self.res4 = ResBlock(128, (3,3), prefix="res_4")
-    self.res5 = ResBlock(128, (3,3), prefix="res_5")
-    self.convt1 = ConvTLayer(64, (3,3), strides=(2,2), name="conv_t_1")
-    self.convt2 = ConvTLayer(32, (3,3), strides=(2,2), name="conv_t_2")
-    self.conv4 = ConvLayer(3, (9,9), strides=(1,1), activate=False, name="conv_4")
+    self.conv1 = ConvLayer(32, (9,9), strides=(1,1), padding='same', name="conv_1")
+    self.conv2 = ConvLayer(64, (3,3), strides=(2,2), padding='same', name="conv_2")
+    self.conv3 = ConvLayer(128, (3,3), strides=(2,2), padding='same', name="conv_3")
+    self.res1 = ResBlock(128, prefix="res_1")
+    self.res2 = ResBlock(128, prefix="res_2")
+    self.res3 = ResBlock(128, prefix="res_3")
+    self.res4 = ResBlock(128, prefix="res_4")
+    self.res5 = ResBlock(128, prefix="res_5")
+    self.convt1 = ConvTLayer(64, (3,3), strides=(2,2), padding='same', name="conv_t_1")
+    self.convt2 = ConvTLayer(32, (3,3), strides=(2,2), padding='same', name="conv_t_2")
+    self.conv4 = ConvLayer(3, (9,9), strides=(1,1), padding='same', activate=False, name="conv_4")
     self.tanh = Activation('tanh')
     self.model = self._get_model()
 
   def _get_model(self):
-    # could try padding valid as well
     inputs = tf.keras.Input(shape=(None,None,3))
     x = self.conv1(inputs)
     x = self.conv2(x)
@@ -43,5 +42,5 @@ class TransformNet(object):
   def preprocess(self, img):
     return img / 255.0
 
-  def unprocess(self, img):
+  def postprocess(self, img):
     return tf.clip_by_value(img, 0.0, 255.0)
