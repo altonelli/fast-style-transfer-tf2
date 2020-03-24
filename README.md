@@ -10,7 +10,7 @@ Several style images are included in this repository. Please note that some
 images are preprocessed/cropped from the original artwork to abstract certain details.
 
 ## Results
-Results after 2 epochs. All of these samples were trained with the default hyper-parameters and can be tuned accordingly.
+Results after 2 epochs. All of these samples were trained with the default hyper-parameters as a base line and can be tuned accordingly. For instance, "The Scream" model could use some tuning or addition training time, as there are untrained spots.
 
 <div align='center'>
 <img src = './assets/styles/mosaic.jpg' height = '200px'>
