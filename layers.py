@@ -3,15 +3,26 @@ from tensorflow_addons.layers import InstanceNormalization
 
 
 class ConvLayer(Layer):
-  def __init__(self, filters, kernel=(3,3), padding='same', strides=(1,1),
-               weight_initializer="glorot_uniform", activate=True, name=""):
+  def __init__(self, filters,
+               kernel=(3,3), padding='same',
+               strides=(1,1), activate=True, name="",
+               weight_initializer="glorot_uniform"
+               ):
     super(ConvLayer, self).__init__()
-    self.conv = Conv2D(filters, kernel_size=kernel, padding=padding, strides=strides,
-                       name=name, trainable=True, use_bias=False, kernel_initializer=weight_initializer)
-    self.inst_norm = InstanceNormalization(axis=3, center=True, scale=True, beta_initializer="zeros",
-                                           gamma_initializer="ones",trainable=True)
-    self.relu_layer = Activation('relu', trainable=False)
     self.activate = activate
+    self.conv = Conv2D(filters, kernel_size=kernel,
+                       padding=padding, strides=strides,
+                       name=name, trainable=True,
+                       use_bias=False,
+                       kernel_initializer=weight_initializer)
+    self.inst_norm = InstanceNormalization(axis=3,
+                                          center=True,
+                                          scale=True,
+                                          beta_initializer="zeros",
+                                          gamma_initializer="ones",
+                                          trainable=True)
+    if self.activate:
+      self.relu_layer = Activation('relu', trainable=False)
 
   def call(self, x):
     x = self.conv(x)
@@ -33,7 +44,7 @@ class ResBlock(Layer):
     self.conv2 = ConvLayer(filters=filters,
                            kernel=kernel,
                            padding=padding,
-                           relu=False,
+                           activate=False,
                            weight_initializer=weight_initializer,
                            name=self.prefix_name + "conv_2")
     self.add = Add(name=self.prefix_name + "add")
@@ -45,10 +56,11 @@ class ResBlock(Layer):
 
 
 class ConvTLayer(Layer):
-  def __init__(self, filters, kernel=(3,3), padding='same', strides=(1,1), relu=True, name="",
+  def __init__(self, filters, kernel=(3,3), padding='same', strides=(1,1), activate=True, name="",
                weight_initializer="glorot_uniform"
                ):
     super(ConvTLayer, self).__init__()
+    self.activate = activate
     self.conv_t = Conv2DTranspose(filters, kernel_size=kernel, padding=padding,
                                   strides=strides, name=name,
                                   use_bias=False,
@@ -59,8 +71,8 @@ class ConvTLayer(Layer):
                                           beta_initializer="zeros",
                                           gamma_initializer="ones",
                                           trainable=True)
-    self.relu_layer = Activation('relu')
-    self.activate = relu
+    if self.activate:
+      self.relu_layer = Activation('relu')
 
   def call(self, x):
     x = self.conv_t(x)

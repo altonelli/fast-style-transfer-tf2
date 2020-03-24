@@ -1,13 +1,12 @@
+from tensorflow.keras.applications import VGG19
+from tensorflow.keras.preprocessing.image import img_to_array, load_img
+from tensorflow.keras.applications.vgg19 import preprocess_input
 from collections import namedtuple
 from glob import glob
 import os
-import csv
+import datetime
 import numpy as np
 import tensorflow as tf
-from distutils.dir_util import copy_tree
-from image_utils import get_image
-from transform_net import TransformNet
-from vgg_model import VGGModel
 
 Loss = namedtuple('Loss', 'total_loss style_loss content_loss tv_loss')
 
@@ -55,21 +54,11 @@ class Trainer:
     def run(self):
         self.S_outputs = self._get_S_outputs()
         self.S_style_grams = [self._gram_matrix(tf.convert_to_tensor(m, tf.float32)) for m in
-                              self.A_outputs[self.vgg.partition_idx:]]
+                              self.S_outputs[self.vgg.partition_idx:]]
 
         content_images = glob(os.path.join(self.content_file_path, "*.jpg"))
         num_images = len(content_images) - (len(content_images) % self.batch_size)
-        print(num_images)
-
-        os.makedirs(self.log_dest_path, exist_ok=True)
-        os.makedirs(self.save_dest_path, exist_ok=True)
-
-        logdir = "/logs"
-        os.makedirs(logdir, exist_ok=True)
-
-        with open(self.log_file, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(["iteration", "total_loss", "style_loss", "content_loss", "tv_loss"])
+        print("Training on %d images" % num_images)
 
         self.iteration = 0
 
@@ -106,7 +95,6 @@ class Trainer:
         with tf.GradientTape(watch_accessed_variables=False) as tape:
             tape.watch(self.transform.get_variables())
             C = self.transform.preprocess(content_tensors)
-            assert (C.get_shape()[0] == self.batch_size)
             X = self.transform.model(C)
             X = self.transform.postprocess(X)
 
@@ -116,14 +104,10 @@ class Trainer:
             Y_hat_style = Y_hat.style_output
 
             C_vgg = self.vgg.preprocess(content_tensors)
-            Y = self.vgg.model(C_vgg)
+            Y = self.vgg.forward(C_vgg)
             Y_content = Y.content_output
 
-            if self.iteration == 0:
-                for v in tape.watched_variables():
-                    tf.print(v.name)
-
-            L = self._get_loss(Y_hat_content, Y_hat_style, Y_content, Y)
+            L = self._get_loss(Y_hat_content, Y_hat_style, Y_content, X)
         grads = tape.gradient(L.total_loss, self.transform.get_variables())
         self.train_optimizer.apply_gradients(zip(grads, self.transform.get_variables()))
         return L
@@ -148,11 +132,11 @@ class Trainer:
     def _get_content_loss(self, transformed_outputs, content_outputs):
         content_loss = 0
         assert (len(transformed_outputs) == len(content_outputs))
-        for i, tensor in enumerate(transformed_outputs):
-            weight = self.c_layer_weights[i]
-            B, H, W, CH = transformed_outputs.get_shape()
+        for i, output in enumerate(transformed_outputs):
+            weight = self.content_layer_weights[i]
+            B, H, W, CH = output.get_shape()
             HW = H * W
-            loss_i = weight * 2 * tf.nn.l2_loss(tensor - content_outputs[i]) / (B * HW * CH)
+            loss_i = weight * 2 * tf.nn.l2_loss(output - content_outputs[i]) / (B * HW * CH)
             content_loss += loss_i
         return content_loss
 
@@ -160,10 +144,10 @@ class Trainer:
         style_loss = 0
         assert (len(transformed_outputs) == len(self.S_style_grams))
         for i, output in enumerate(transformed_outputs):
-            weight = self.s_layer_weights[i]
-            B, H, W, CH = transformed_outputs.get_shape()
+            weight = self.style_layer_weights[i]
+            B, H, W, CH = output.get_shape()
             G = self._gram_matrix(output)
-            A = self.S_style_grams[i]  # style feature of a
+            A = self.S_style_grams[i]
             style_loss += weight * 2 * tf.nn.l2_loss(G - A) / (B * (CH ** 2))
         return style_loss
 
@@ -183,7 +167,5 @@ class Trainer:
                  % (self.iteration, L.total_loss, L.style_loss, L.content_loss, L.tv_loss))
 
     def _save_protocol(self):
-        dest_path = os.path.join(self.save_dest_path, str(self.iteration))
         tf.keras.models.save_model(model=self.transform.model, filepath=self.saved_model_path)
-        copy_tree(self.saved_model_path, dest_path)
 
