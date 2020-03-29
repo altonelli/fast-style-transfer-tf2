@@ -12,5 +12,5 @@ def get_image(img_path, img_size=False):
 
 def resize_img(img, size):
     if len(size) == 2:
-        size += 3
+        size += (3,)
     return transform.resize(img, size, preserve_range=True)
